@@ -71,7 +71,7 @@ public class OrderServiceTest {
         assertEquals("Alice", response.getCustomerName());
         assertEquals("Pizza", response.getFoodItem());
         assertEquals(BigDecimal.valueOf(15.99), response.getAmount());
-        assertEquals("PLACED", response.getStatus());
+        assertEquals("REQUESTED", response.getStatus());
 
         verify(orderRepository, times(1)).save(any(Order.class));
         verify(logService, times(1)).logWorkflowStep(anyLong(), anyString(), anyString(), anyString(), anyString());
