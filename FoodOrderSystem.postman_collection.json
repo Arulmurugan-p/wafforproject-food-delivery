@@ -1,0 +1,242 @@
+{
+  "info": {
+    "_postman_id": "893c59cf-b7c4-4cda-92ee-67ee847d0663",
+    "name": "Food Order Processing System API",
+    "description": "API collection for testing and verifying the Food Order Processing System microservices.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticates the admin user and returns a JWT Bearer Token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Order Service",
+      "item": [
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"John Doe\",\n  \"foodItem\": \"Pepperoni Pizza XL\",\n  \"amount\": 18.50\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "orders"]
+            },
+            "description": "Places a new food order, saves it to the database, and publishes a creation event to ActiveMQ."
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/orders",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "orders"]
+            },
+            "description": "Retrieves all placed orders from the system."
+          }
+        },
+        {
+          "name": "Get Order Details & Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/orders/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "orders", "1"]
+            },
+            "description": "Retrieves specific order details along with the associated Camunda workflow execution history logs."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Tasks",
+      "item": [
+        {
+          "name": "Get Active Camunda Tasks",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/tasks",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "tasks"]
+            },
+            "description": "Fetches all active Camunda user tasks waiting for Admin approval. Requires Admin JWT bearer token."
+          }
+        },
+        {
+          "name": "Complete Task (Approve)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/admin/tasks/{{task_id}}/complete",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "admin", "tasks", "{{task_id}}", "complete"]
+            },
+            "description": "Approves an order by completing the corresponding Camunda User Task. Resumes workflow orchestration."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Internal Microservices (Mock Endpoints)",
+      "item": [
+        {
+          "name": "Mock Payment Process",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": 1,\n  \"amount\": 18.50\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8082/internal/payment",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["internal", "payment"]
+            },
+            "description": "Mock endpoint for the Payment microservice. Succeeds 80% of the time, fails 20%."
+          }
+        },
+        {
+          "name": "Mock Kitchen Processing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": 1,\n  \"foodItem\": \"Pepperoni Pizza XL\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8083/internal/kitchen",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["internal", "kitchen"]
+            },
+            "description": "Mock endpoint for the Kitchen microservice. Simulates food preparation and returns FOOD_READY."
+          }
+        },
+        {
+          "name": "Mock Delivery Assignment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": 1,\n  \"customerName\": \"John Doe\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8084/internal/delivery",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8084",
+              "path": ["internal", "delivery"]
+            },
+            "description": "Mock endpoint for the Delivery microservice. Assigns a courier partner, generates an ETA, and returns DELIVERED."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "admin_token",
+      "value": "paste_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "task_id",
+      "value": "paste_camunda_task_id_here",
+      "type": "string"
+    }
+  ]
+}

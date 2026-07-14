@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_1"
+                  targetNamespace="http://bpmn.io/schema/bpmn"
+                  exporter="Camunda Modeler"
+                  exporterVersion="5.0.0">
+  <bpmn:process id="FoodOrderFlow" name="Food Order Process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="StartEvent_1" name="Order Placed">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Status_Requested" />
+    
+    <bpmn:serviceTask id="Status_Requested" name="Set Status: REQUESTED" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">REQUESTED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Status_Requested" targetRef="AdminApproveTask" />
+    
+    <bpmn:userTask id="AdminApproveTask" name="Approve Order" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="AdminApproveTask" targetRef="Gateway_AdminApprove" />
+    
+    <bpmn:exclusiveGateway id="Gateway_AdminApprove" name="Approved?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approve_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Approve_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <!-- Admin Rejects -->
+    <bpmn:sequenceFlow id="Flow_Approve_No" name="No" sourceRef="Gateway_AdminApprove" targetRef="Status_Rejected">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:serviceTask id="Status_Rejected" name="Set Status: ORDER_REJECTED" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">ORDER_REJECTED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Approve_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_Rejected_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_Rejected_End" sourceRef="Status_Rejected" targetRef="Status_Cancelled" />
+    
+    <!-- Admin Approves -->
+    <bpmn:sequenceFlow id="Flow_Approve_Yes" name="Yes" sourceRef="Gateway_AdminApprove" targetRef="Status_Approved">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:serviceTask id="Status_Approved" name="Set Status: ORDER_APPROVED" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">ORDER_APPROVED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Approve_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved_Next</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_Approved_Next" sourceRef="Status_Approved" targetRef="Status_PaymentPending" />
+    
+    <bpmn:serviceTask id="Status_PaymentPending" name="Set Status: PAYMENT_PENDING" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">PAYMENT_PENDING</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Approved_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_Payment_Next</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_Payment_Next" sourceRef="Status_PaymentPending" targetRef="AdminVerifyPaymentTask" />
+    
+    <bpmn:userTask id="AdminVerifyPaymentTask" name="Verify Payment" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:incoming>Flow_Payment_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_Payment_Completed</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:sequenceFlow id="Flow_Payment_Completed" sourceRef="AdminVerifyPaymentTask" targetRef="Gateway_PaymentVerify" />
+    
+    <bpmn:exclusiveGateway id="Gateway_PaymentVerify" name="Payment Success?">
+      <bpmn:incoming>Flow_Payment_Completed</bpmn:incoming>
+      <bpmn:outgoing>Flow_Payment_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Payment_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    
+    <!-- Payment Fails -->
+    <bpmn:sequenceFlow id="Flow_Payment_No" name="No" sourceRef="Gateway_PaymentVerify" targetRef="Status_PaymentRejected">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${paymentSuccess == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:serviceTask id="Status_PaymentRejected" name="Set Status: PAYMENT_REJECTED" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">PAYMENT_REJECTED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Payment_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_PaymentRejected_Next</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_PaymentRejected_Next" sourceRef="Status_PaymentRejected" targetRef="Status_Cancelled" />
+    
+    <!-- Payment Verified -->
+    <bpmn:sequenceFlow id="Flow_Payment_Yes" name="Yes" sourceRef="Gateway_PaymentVerify" targetRef="Status_PaymentVerified">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${paymentSuccess == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    
+    <bpmn:serviceTask id="Status_PaymentVerified" name="Set Status: PAYMENT_VERIFIED" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">PAYMENT_VERIFIED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Payment_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_Verified_Next</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_Verified_Next" sourceRef="Status_PaymentVerified" targetRef="AdminKitchenPrepTask" />
+    
+    <!-- Kitchen Prep User Task -->
+    <bpmn:userTask id="AdminKitchenPrepTask" name="Kitchen Preparation" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:incoming>Flow_Verified_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_Prep_Finished</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:sequenceFlow id="Flow_Prep_Finished" sourceRef="AdminKitchenPrepTask" targetRef="Status_FoodReady" />
+    
+    <bpmn:serviceTask id="Status_FoodReady" name="Set Status: FOOD_READY" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">FOOD_READY</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Prep_Finished</bpmn:incoming>
+      <bpmn:outgoing>Flow_Ready_Next</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_Ready_Next" sourceRef="Status_FoodReady" targetRef="AdminAssignDeliveryTask" />
+    
+    <!-- Delivery Assignment User Task -->
+    <bpmn:userTask id="AdminAssignDeliveryTask" name="Assign Delivery Partner" camunda:candidateGroups="ROLE_ADMIN">
+      <bpmn:incoming>Flow_Ready_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_Assigned_Next</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:sequenceFlow id="Flow_Assigned_Next" sourceRef="AdminAssignDeliveryTask" targetRef="Status_DeliveryAssigned" />
+    
+    <bpmn:serviceTask id="Status_DeliveryAssigned" name="Set Status: DELIVERY_ASSIGNED" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">DELIVERY_ASSIGNED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Assigned_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_Accept_Next</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_Accept_Next" sourceRef="Status_DeliveryAssigned" targetRef="DeliveryPartnerAcceptTask" />
+    
+    <!-- Delivery Partner Accept User Task -->
+    <bpmn:userTask id="DeliveryPartnerAcceptTask" name="Delivery Partner Accept" camunda:candidateGroups="ROLE_DELIVERY_PARTNER">
+      <bpmn:incoming>Flow_Accept_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_Accepted_Next</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:sequenceFlow id="Flow_Accepted_Next" sourceRef="DeliveryPartnerAcceptTask" targetRef="Status_OutForDelivery" />
+    
+    <bpmn:serviceTask id="Status_OutForDelivery" name="Set Status: OUT_FOR_DELIVERY" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">OUT_FOR_DELIVERY</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Accepted_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_Deliver_Next</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:sequenceFlow id="Flow_Deliver_Next" sourceRef="Status_OutForDelivery" targetRef="DeliveryPartnerDeliverTask" />
+    
+    <!-- Delivery Partner Complete User Task -->
+    <bpmn:userTask id="DeliveryPartnerDeliverTask" name="Delivery Partner Complete" camunda:candidateGroups="ROLE_DELIVERY_PARTNER">
+      <bpmn:incoming>Flow_Deliver_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_Delivered_Next</bpmn:outgoing>
+    </bpmn:userTask>
+    
+    <bpmn:sequenceFlow id="Flow_Delivered_Next" sourceRef="DeliveryPartnerDeliverTask" targetRef="Status_Delivered" />
+    
+    <bpmn:serviceTask id="Status_Delivered" name="Set Status: DELIVERED" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">DELIVERED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Delivered_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_EndSuccess</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:endEvent id="EndEvent_Success" name="Order Completed">
+      <bpmn:incoming>Flow_EndSuccess</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:sequenceFlow id="Flow_EndSuccess" sourceRef="Status_Delivered" targetRef="EndEvent_Success" />
+    
+    <!-- Cancellation termination -->
+    <bpmn:serviceTask id="Status_Cancelled" name="Set Status: CANCELLED" camunda:delegateExpression="${updateStatusDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="targetStatus">CANCELLED</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Rejected_End</bpmn:incoming>
+      <bpmn:incoming>Flow_PaymentRejected_Next</bpmn:incoming>
+      <bpmn:outgoing>Flow_EndFailure</bpmn:outgoing>
+    </bpmn:serviceTask>
+    
+    <bpmn:endEvent id="EndEvent_Failure" name="Order Cancelled">
+      <bpmn:incoming>Flow_EndFailure</bpmn:incoming>
+    </bpmn:endEvent>
+    
+    <bpmn:sequenceFlow id="Flow_EndFailure" sourceRef="Status_Cancelled" targetRef="EndEvent_Failure" />
+  </bpmn:process>
+</bpmn:definitions>

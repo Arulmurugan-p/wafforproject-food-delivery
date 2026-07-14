@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: food-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: Arul@1234
+      MYSQL_DATABASE: order_db
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pArul@1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - food-network
+
+  activemq:
+    image: apache/activemq-classic:6.1.2
+    container_name: food-activemq
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      - ACTIVEMQ_ADMIN_USER=admin
+      - ACTIVEMQ_ADMIN_PASSWORD=admin
+    networks:
+      - food-network
+
+  payment-service:
+    build:
+      context: ./backend
+      dockerfile: ./payment-service/Dockerfile
+    container_name: payment-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/payment_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Arul@1234
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - food-network
+
+  kitchen-service:
+    build:
+      context: ./backend
+      dockerfile: ./kitchen-service/Dockerfile
+    container_name: kitchen-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/kitchen_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Arul@1234
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - food-network
+
+  delivery-service:
+    build:
+      context: ./backend
+      dockerfile: ./delivery-service/Dockerfile
+    container_name: delivery-service
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/delivery_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Arul@1234
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - food-network
+
+  order-service:
+    build:
+      context: ./backend
+      dockerfile: ./order-service/Dockerfile
+    container_name: order-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/order_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Arul@1234
+      - ACTIVEMQ_BROKER_URL=tcp://activemq:61616
+      - ACTIVEMQ_EMBEDDED=false
+    depends_on:
+      mysql:
+        condition: service_healthy
+      activemq:
+        condition: service_started
+    networks:
+      - food-network
+
+  react-app:
+    build:
+      context: ./frontend/react-app
+      dockerfile: Dockerfile
+    container_name: react-app
+    ports:
+      - "3000:80"
+    depends_on:
+      - order-service
+    networks:
+      - food-network
+
+volumes:
+  mysql-data:
+
+networks:
+  food-network:
+    driver: bridge
