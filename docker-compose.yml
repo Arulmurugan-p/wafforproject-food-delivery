@@ -31,57 +31,6 @@ services:
     networks:
       - food-network
 
-  payment-service:
-    build:
-      context: ./backend
-      dockerfile: ./payment-service/Dockerfile
-    container_name: payment-service
-    ports:
-      - "8082:8082"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/payment_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=Arul@1234
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - food-network
-
-  kitchen-service:
-    build:
-      context: ./backend
-      dockerfile: ./kitchen-service/Dockerfile
-    container_name: kitchen-service
-    ports:
-      - "8083:8083"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/kitchen_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=Arul@1234
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - food-network
-
-  delivery-service:
-    build:
-      context: ./backend
-      dockerfile: ./delivery-service/Dockerfile
-    container_name: delivery-service
-    ports:
-      - "8084:8084"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/delivery_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=Arul@1234
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - food-network
-
   order-service:
     build:
       context: ./backend
