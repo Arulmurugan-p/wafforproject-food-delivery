@@ -36,6 +36,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                // Internal microservice REST APIs
+                .requestMatchers("/internal/**").permitAll()
                 // Camunda console and API endpoints (for debugging / testing)
                 .requestMatchers("/camunda/**", "/engine-rest/**").permitAll()
                 // Swagger Documentation

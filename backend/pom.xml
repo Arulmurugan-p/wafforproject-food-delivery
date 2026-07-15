@@ -24,9 +24,6 @@
     </properties>
 
     <modules>
-        <module>payment-service</module>
-        <module>kitchen-service</module>
-        <module>delivery-service</module>
         <module>order-service</module>
     </modules>
 
