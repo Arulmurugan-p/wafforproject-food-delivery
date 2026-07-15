@@ -22,7 +22,6 @@
         <java.version>21</java.version>
         <camunda.version>7.21.0</camunda.version>
         <springdoc.version>2.5.0</springdoc.version>
-        <activemq.version>6.1.2</activemq.version>
         <jwt.version>0.11.5</jwt.version>
     </properties>
 
@@ -65,21 +64,7 @@
             <version>${camunda.version}</version>
         </dependency>
 
-        <!-- ActiveMQ Classic Jakarta dependencies -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-client</artifactId>
-            <version>${activemq.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-broker</artifactId>
-            <version>${activemq.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jms</artifactId>
-        </dependency>
+
 
         <!-- JWT Security Dependencies -->
         <dependency>

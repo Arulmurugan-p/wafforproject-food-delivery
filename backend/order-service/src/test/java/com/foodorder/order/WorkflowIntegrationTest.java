@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(properties = {"activemq.embedded=false", "activemq.queue.name=order.created.test"})
+@SpringBootTest
 public class WorkflowIntegrationTest {
 
     @Autowired
@@ -142,13 +142,13 @@ public class WorkflowIntegrationTest {
         assertEquals("FOOD_READY", order.getStatus());
 
         // 6. Admin assigns delivery partner (Saves Delivery entity and completes task)
-        deliveryRepository.save(Delivery.builder()
-                .orderId(orderId)
-                .partnerUsername("delivery")
-                .status("ASSIGNED")
-                .eta(25)
-                .createdAt(java.time.LocalDateTime.now())
-                .build());
+        Delivery newDelivery = new Delivery();
+        newDelivery.setOrderId(orderId);
+        newDelivery.setPartnerUsername("delivery");
+        newDelivery.setStatus("ASSIGNED");
+        newDelivery.setEta(25);
+        newDelivery.setCreatedAt(java.time.LocalDateTime.now());
+        deliveryRepository.save(newDelivery);
 
         taskService.complete(assignDeliveryTask.getId());
 

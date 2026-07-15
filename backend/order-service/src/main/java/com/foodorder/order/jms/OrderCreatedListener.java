@@ -3,7 +3,7 @@ package com.foodorder.order.jms;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.RuntimeService;
-import org.springframework.jms.annotation.JmsListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -16,7 +16,7 @@ public class OrderCreatedListener {
 
     private final RuntimeService runtimeService;
 
-    @JmsListener(destination = "${activemq.queue.name}", containerFactory = "jmsListenerContainerFactory")
+    @EventListener
     public void onOrderCreated(OrderCreatedEvent event) {
         Long orderId = event.getOrderId();
         String customerName = event.getCustomerName();
