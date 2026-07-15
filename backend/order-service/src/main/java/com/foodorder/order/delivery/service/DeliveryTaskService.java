@@ -3,7 +3,7 @@ package com.foodorder.order.delivery.service;
 import com.foodorder.order.delivery.dto.DeliveryRequest;
 import com.foodorder.order.delivery.dto.DeliveryResponse;
 import com.foodorder.order.delivery.entity.DeliveryTask;
-import com.foodorder.order.delivery.repository.DeliveryRepository;
+import com.foodorder.order.delivery.repository.DeliveryTaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,9 +15,9 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class DeliveryService {
+public class DeliveryTaskService {
 
-    private final DeliveryRepository deliveryRepository;
+    private final DeliveryTaskRepository deliveryTaskRepository;
     private final Random random = new Random();
     private static final String[] PARTNERS = {"Swift Runner", "Express Courier", "Flash Delivery", "Eco Rider", "Zoom Delivery"};
 
@@ -35,12 +35,12 @@ public class DeliveryService {
                 .status("OUT_FOR_DELIVERY")
                 .build();
 
-        deliveryRepository.save(task);
+        deliveryTaskRepository.save(task);
         log.info("[DeliveryService] Order #{} status: OUT_FOR_DELIVERY, Courier: {}, ETA: {}", request.getOrderId(), partner, eta);
 
         // Transition to DELIVERED
         task.setStatus("DELIVERED");
-        deliveryRepository.save(task);
+        deliveryTaskRepository.save(task);
 
         log.info("[DeliveryService] DELIVERED Order #{} (Timestamp: {})", request.getOrderId(), LocalDateTime.now());
 

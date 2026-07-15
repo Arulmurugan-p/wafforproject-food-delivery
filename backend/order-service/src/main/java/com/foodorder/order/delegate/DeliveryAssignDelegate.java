@@ -2,7 +2,7 @@ package com.foodorder.order.delegate;
 
 import com.foodorder.order.delivery.dto.DeliveryRequest;
 import com.foodorder.order.delivery.dto.DeliveryResponse;
-import com.foodorder.order.delivery.service.DeliveryService;
+import com.foodorder.order.delivery.service.DeliveryTaskService;
 import com.foodorder.order.service.WorkflowLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class DeliveryAssignDelegate implements JavaDelegate {
 
-    private final DeliveryService deliveryService;
+    private final DeliveryTaskService deliveryService;
     private final WorkflowLogService logService;
 
     @Override
