@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(properties = "activemq.embedded=false")
+@SpringBootTest(properties = {"activemq.embedded=false", "activemq.queue.name=order.created.test"})
 public class WorkflowIntegrationTest {
 
     @Autowired
