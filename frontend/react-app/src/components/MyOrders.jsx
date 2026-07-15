@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const foodImages = {
   "Classic Cheese Burger": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80",
@@ -32,12 +33,12 @@ function MyOrders({ token, role }) {
   const fetchOrders = React.useCallback(async () => {
     if (!token) return;
     try {
-      let endpoint = 'http://localhost:8081/api/orders/customer'; // default customer
+      let endpoint = `${API_BASE_URL}/api/orders/customer`; // default customer
       if (role === 'ROLE_ADMIN') {
-        endpoint = 'http://localhost:8081/api/orders';
+        endpoint = `${API_BASE_URL}/api/orders`;
       } else if (role === 'ROLE_DELIVERY_PARTNER') {
         // Fetch historical courier deliveries
-        endpoint = 'http://localhost:8081/api/delivery/tasks';
+        endpoint = `${API_BASE_URL}/api/delivery/tasks`;
       }
 
       const response = await axios.get(endpoint, {

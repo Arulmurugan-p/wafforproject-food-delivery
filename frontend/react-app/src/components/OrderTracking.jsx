@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 function OrderTracking({ token }) {
   const { orderId } = useParams();
@@ -11,7 +12,7 @@ function OrderTracking({ token }) {
   const fetchDetails = React.useCallback(async () => {
     if (!token) return;
     try {
-      const response = await axios.get(`http://localhost:8081/api/orders/${orderId}`, {
+      const response = await axios.get(`${API_BASE_URL}/api/orders/${orderId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(response.data);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 function Navbar({ token, user, onLogout, cartCount }) {
   const [notifications, setNotifications] = useState([]);
@@ -9,7 +10,7 @@ function Navbar({ token, user, onLogout, cartCount }) {
   const fetchNotifications = React.useCallback(async () => {
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:8081/api/notifications', {
+      const res = await axios.get(`${API_BASE_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(res.data);
@@ -27,7 +28,7 @@ function Navbar({ token, user, onLogout, cartCount }) {
   const markAllRead = async () => {
     if (!token) return;
     try {
-      await axios.post('http://localhost:8081/api/notifications/mark-read', {}, {
+      await axios.post(`${API_BASE_URL}/api/notifications/mark-read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchNotifications();

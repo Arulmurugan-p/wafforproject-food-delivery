@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 import Dashboard from './components/Dashboard';
 import MyOrders from './components/MyOrders';
 import OrderTracking from './components/OrderTracking';
@@ -22,7 +23,7 @@ function App() {
       return;
     }
     try {
-      const response = await axios.get('http://localhost:8081/api/cart', {
+      const response = await axios.get(`${API_BASE_URL}/api/cart`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCart(response.data);
@@ -39,7 +40,7 @@ function App() {
   const addToCart = async (item) => {
     if (!token) return;
     try {
-      const response = await axios.post('http://localhost:8081/api/cart/add', item, {
+      const response = await axios.post(`${API_BASE_URL}/api/cart/add`, item, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCart(response.data);
@@ -51,7 +52,7 @@ function App() {
   const updateQuantity = async (itemName, delta) => {
     if (!token) return;
     try {
-      const response = await axios.post('http://localhost:8081/api/cart/update', { name: itemName, delta }, {
+      const response = await axios.post(`${API_BASE_URL}/api/cart/update`, { name: itemName, delta }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCart(response.data);
@@ -63,7 +64,7 @@ function App() {
   const removeFromCart = async (itemName) => {
     if (!token) return;
     try {
-      const response = await axios.post('http://localhost:8081/api/cart/remove', { name: itemName }, {
+      const response = await axios.post(`${API_BASE_URL}/api/cart/remove`, { name: itemName }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCart(response.data);
@@ -75,7 +76,7 @@ function App() {
   const clearCart = async () => {
     if (!token) return;
     try {
-      await axios.post('http://localhost:8081/api/cart/clear', {}, {
+      await axios.post(`${API_BASE_URL}/api/cart/clear`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCart([]);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 import AdminPanel from './AdminPanel';
 
 const foodImages = {
@@ -94,11 +95,10 @@ function Dashboard({ token, role, user, cart, addToCart, updateQuantity, removeF
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  // 1. Fetch courier partner tasks periodically
   const fetchDeliveries = React.useCallback(async () => {
     if (role !== 'ROLE_DELIVERY_PARTNER') return;
     try {
-      const res = await axios.get('http://localhost:8081/api/delivery/tasks', {
+      const res = await axios.get(`${API_BASE_URL}/api/delivery/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDeliveries(res.data);
@@ -120,7 +120,7 @@ function Dashboard({ token, role, user, cart, addToCart, updateQuantity, removeF
   const handleDeliveryAction = async (orderId, actionPath) => {
     setDeliveryActionId(orderId);
     try {
-      await axios.post(`http://localhost:8081/api/delivery/tasks/${orderId}/${actionPath}`, {}, config);
+      await axios.post(`${API_BASE_URL}/api/delivery/tasks/${orderId}/${actionPath}`, {}, config);
       fetchDeliveries();
     } catch (err) {
       console.error(err);
@@ -283,7 +283,7 @@ function Dashboard({ token, role, user, cart, addToCart, updateQuantity, removeF
     try {
       const description = cart.map(i => `${i.name}${i.quantity > 1 ? ' x' + i.quantity : ''}`).join(', ');
 
-      const response = await axios.post('http://localhost:8081/api/orders', {
+      const response = await axios.post(`${API_BASE_URL}/api/orders`, {
         customerName,
         foodItem: description,
         amount: parseFloat(totalAmount.toFixed(2)),

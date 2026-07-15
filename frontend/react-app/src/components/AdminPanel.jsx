@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 function AdminPanel({ token, onLogout }) {
   const [orders, setOrders] = useState([]);
@@ -21,15 +22,15 @@ function AdminPanel({ token, onLogout }) {
         headers: { Authorization: `Bearer ${token}` }
       };
       // 1. Fetch all orders (to calculate statistics)
-      const ordersRes = await axios.get('http://localhost:8081/api/orders', currentConfig);
+      const ordersRes = await axios.get(`${API_BASE_URL}/api/orders`, currentConfig);
       setOrders(ordersRes.data);
-
+ 
       // 2. Fetch active workflow tasks
-      const tasksRes = await axios.get('http://localhost:8081/api/admin/tasks', currentConfig);
+      const tasksRes = await axios.get(`${API_BASE_URL}/api/admin/tasks`, currentConfig);
       setTasks(tasksRes.data);
-
+ 
       // 3. Fetch delivery partners
-      const partnersRes = await axios.get('http://localhost:8081/api/admin/tasks/delivery-partners', currentConfig);
+      const partnersRes = await axios.get(`${API_BASE_URL}/api/admin/tasks/delivery-partners`, currentConfig);
       setPartners(partnersRes.data);
 
       setError(null);
@@ -65,7 +66,7 @@ function AdminPanel({ token, onLogout }) {
   const handleAction = async (taskId, actionPath, payload = {}) => {
     setActionLoading(taskId);
     try {
-      await axios.post(`http://localhost:8081/api/admin/tasks/${taskId}/${actionPath}`, payload, config);
+      await axios.post(`${API_BASE_URL}/api/admin/tasks/${taskId}/${actionPath}`, payload, config);
       fetchData();
     } catch (err) {
       console.error(err);

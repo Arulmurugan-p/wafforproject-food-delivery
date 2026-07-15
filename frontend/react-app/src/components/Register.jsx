@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -16,7 +17,7 @@ function Register() {
     e.preventDefault();
     setError(null);
     setSuccess(false);
-
+ 
     if (password !== confirmPassword) {
       setError("Passwords do not match!");
       return;
@@ -25,7 +26,7 @@ function Register() {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:8081/api/auth/register', {
+      await axios.post(`${API_BASE_URL}/api/auth/register`, {
         username,
         email,
         password
