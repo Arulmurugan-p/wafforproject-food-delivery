@@ -1,17 +1,17 @@
 # Online Food Order Processing System
 
-A complete production-quality, event-driven microservices application for online food order orchestration. Built with Spring Boot, Camunda BPM, ActiveMQ Classic, MySQL, and a modern React UI.
+A complete production-quality microservices application for online food order orchestration. Built with Spring Boot, Camunda BPM, MySQL, and a modern React UI.
 
 ---
 
 ## System Architecture
 
-The application is structured as a collection of core microservices, integrated asynchronously using an ActiveMQ message broker and orchestrated end-to-end via an embedded Camunda 7 Workflow Engine in the Order Service.
+The application is structured as a collection of core microservices, integrated using in-process Spring ApplicationEvents and orchestrated end-to-end via an embedded Camunda 7 Workflow Engine in the Order Service.
 
 ```mermaid
 graph TD
     UI[React Frontend] -->|REST / JWT| OS[Order Service: Port 8081]
-    OS -->|JMS ActiveMQ: order.created| OS
+    OS -->|Spring Event: order.created| OS
     OS -->|Embedded Camunda BPM| OS
     
     %% Camunda Orchestration
@@ -24,9 +24,6 @@ graph TD
     PS --> DB_PS[(MySQL: payment_db)]
     KS --> DB_KS[(MySQL: kitchen_db)]
     DS --> DB_DS[(MySQL: delivery_db)]
-    
-    %% ActiveMQ
-    AMQ[ActiveMQ Broker: Port 61616] <-->|JMS Queue| OS
 ```
 
 ---
@@ -188,20 +185,50 @@ If running outside Docker:
   - **Password**: `admin123`
 
 
-# 🚀 Live Demo
+# 🚀 Production Cloud Deployment Checklist
 
-Frontend
-https://wafforproject-food-delivery.vercel.app/
+To deploy the Spring Boot backend (`order-service`) to Render:
 
-GitHub Repository
-https://github.com/Arulmurugan-p/wafforproject-food-delivery
+### Step 1: Provision a Managed MySQL Database
+Create a MySQL database (e.g. via Aiven, AWS RDS, or any MySQL provider) and record the following credentials:
+- **Host / URL**: e.g., `mysql://<host>:<port>/order_db`
+- **Username**: e.g., `root` or `<custom_user>`
+- **Password**: e.g., `<db_password>`
+
+### Step 2: Create a Web Service on Render
+1. Log into your Render Dashboard.
+2. Click **New +** ➔ **Web Service**.
+3. Connect your GitHub repository: `https://github.com/Arulmurugan-p/wafforproject-food-delivery`.
+4. Configure the service settings:
+   - **Name**: `order-service`
+   - **Region**: Select your preferred region (e.g., Oregon)
+   - **Branch**: `main`
+   - **Root Directory**: `backend/order-service`
+   - **Runtime**: `Docker`
+5. Click **Advanced** to add the following **Environment Variables**:
+
+| Variable Name | Value / Format | Purpose |
+|---|---|---|
+| `SPRING_DATASOURCE_URL` | `jdbc:mysql://<host>:<port>/order_db?useSSL=true&allowPublicKeyRetrieval=true` | JDBC Connection URL to your MySQL Database |
+| `SPRING_DATASOURCE_USERNAME` | `<db_username>` | MySQL username |
+| `SPRING_DATASOURCE_PASSWORD` | `<db_password>` | MySQL password |
+| `PORT` | `8081` | Container port matching internal bindings |
+
+6. Click **Create Web Service**.
+
+### Step 3: Configure Frontend on Vercel
+In your Vercel Project Settings for the frontend app:
+1. Add a new **Environment Variable**:
+   - **Key**: `VITE_API_BASE_URL`
+   - **Value**: `https://[your-render-service-name].onrender.com` (Your Render Web Service URL)
+2. Redeploy the frontend.
+
+---
 
 ## Tech Stack
-
 - React + Vite
 - Java 21
 - Spring Boot
 - MySQL
 - Camunda BPM
-- ActiveMQ
 - Docker
