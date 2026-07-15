@@ -186,3 +186,22 @@ If running outside Docker:
 - **Login Credentials**:
   - **Username**: `admin`
   - **Password**: `admin123`
+
+
+# 🚀 Live Demo
+
+Frontend
+https://wafforproject-food-delivery.vercel.app/
+
+GitHub Repository
+https://github.com/Arulmurugan-p/wafforproject-food-delivery
+
+## Tech Stack
+
+- React + Vite
+- Java 21
+- Spring Boot
+- MySQL
+- Camunda BPM
+- ActiveMQ
+- Docker
