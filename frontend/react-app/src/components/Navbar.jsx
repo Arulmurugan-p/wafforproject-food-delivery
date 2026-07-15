@@ -6,7 +6,7 @@ function Navbar({ token, user, onLogout, cartCount }) {
   const [notifications, setNotifications] = useState([]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = React.useCallback(async () => {
     if (!token) return;
     try {
       const res = await axios.get('http://localhost:8081/api/notifications', {
@@ -16,13 +16,13 @@ function Navbar({ token, user, onLogout, cartCount }) {
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 3000);
     return () => clearInterval(interval);
-  }, [token]);
+  }, [fetchNotifications]);
 
   const markAllRead = async () => {
     if (!token) return;

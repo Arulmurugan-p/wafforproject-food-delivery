@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import Dashboard from './components/Dashboard';
 import MyOrders from './components/MyOrders';
 import OrderTracking from './components/OrderTracking';
-import AdminPanel from './components/AdminPanel';
 import Login from './components/Login';
 import Register from './components/Register';
 import Navbar from './components/Navbar';
@@ -17,7 +16,7 @@ function App() {
   const [cart, setCart] = useState([]);
 
   // Fetch cart from database when token/role changes
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     if (!token || role !== 'ROLE_CUSTOMER') {
       setCart([]);
       return;
@@ -30,11 +29,11 @@ function App() {
     } catch (err) {
       console.error('Failed to fetch cart from backend:', err);
     }
-  };
+  }, [token, role]);
 
   useEffect(() => {
     fetchCart();
-  }, [token, role]);
+  }, [fetchCart]);
 
   // Cart Management Actions (Synchronized with DB)
   const addToCart = async (item) => {

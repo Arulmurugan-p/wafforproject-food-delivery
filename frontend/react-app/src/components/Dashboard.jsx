@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AdminPanel from './AdminPanel';
 
 const foodImages = {
@@ -95,17 +95,19 @@ function Dashboard({ token, role, user, cart, addToCart, updateQuantity, removeF
   };
 
   // 1. Fetch courier partner tasks periodically
-  const fetchDeliveries = async () => {
+  const fetchDeliveries = React.useCallback(async () => {
     if (role !== 'ROLE_DELIVERY_PARTNER') return;
     try {
-      const res = await axios.get('http://localhost:8081/api/delivery/tasks', config);
+      const res = await axios.get('http://localhost:8081/api/delivery/tasks', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setDeliveries(res.data);
     } catch (err) {
       console.error(err);
     } finally {
       setDeliveryLoading(false);
     }
-  };
+  }, [token, role]);
 
   useEffect(() => {
     if (role === 'ROLE_DELIVERY_PARTNER') {
@@ -113,7 +115,7 @@ function Dashboard({ token, role, user, cart, addToCart, updateQuantity, removeF
       const interval = setInterval(fetchDeliveries, 2000);
       return () => clearInterval(interval);
     }
-  }, [token, role]);
+  }, [role, fetchDeliveries]);
 
   const handleDeliveryAction = async (orderId, actionPath) => {
     setDeliveryActionId(orderId);
@@ -158,9 +160,10 @@ function Dashboard({ token, role, user, cart, addToCart, updateQuantity, removeF
                 <div>
                   <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#1C1C1C' }}>Delivery for Order #{d.orderId}</h3>
                   <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#686B78', lineHeight: '1.5' }}>
-                    <div>👤 Client Name: <strong>{customerName}</strong></div>
-                    <div>📍 Deliver to: <strong>{address}</strong></div>
-                    <div>📞 Contact Phone: <strong>{phone}</strong></div>
+                    <div>👤 Client Name: <strong>{d.customerName}</strong></div>
+                    <div>📍 Deliver to: <strong>{d.address}</strong></div>
+                    <div>📞 Contact Phone: <strong>{d.phone}</strong></div>
+                    <div>🍔 Food: <strong>{d.foodItem}</strong> (₹{d.amount.toLocaleString('en-IN')})</div>
                     <div>📦 Delivery Status: <span className="badge badge-delivery">{d.status}</span></div>
                     {d.eta && <div>🕒 Estimated ETA: <strong>{d.eta} mins</strong></div>}
                   </div>
@@ -283,7 +286,9 @@ function Dashboard({ token, role, user, cart, addToCart, updateQuantity, removeF
       const response = await axios.post('http://localhost:8081/api/orders', {
         customerName,
         foodItem: description,
-        amount: parseFloat(totalAmount.toFixed(2))
+        amount: parseFloat(totalAmount.toFixed(2)),
+        address,
+        phone
       }, config);
 
       // Clear local cart via sync

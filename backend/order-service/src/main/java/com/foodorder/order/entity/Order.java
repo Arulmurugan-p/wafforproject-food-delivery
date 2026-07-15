@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "orders", indexes = {
-    @Index(name = "idx_orders_status", columnList = "status")
+    @Index(name = "idx_orders_status", columnList = "status"),
+    @Index(name = "idx_orders_customer_created", columnList = "customerName, createdAt DESC")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Data
@@ -32,6 +33,12 @@ public class Order {
 
     @Column(nullable = false)
     private BigDecimal amount;
+
+    @Column(nullable = false)
+    private String address;
+
+    @Column(nullable = false)
+    private String phone;
 
     @Column(nullable = false)
     private String status; // PLACED, PAYMENT_PROCESSING, KITCHEN_PREPARING, FOOD_READY, OUT_FOR_DELIVERY, DELIVERED, CANCELLED

@@ -29,7 +29,7 @@ function MyOrders({ token, role }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchOrders = async () => {
+  const fetchOrders = React.useCallback(async () => {
     if (!token) return;
     try {
       let endpoint = 'http://localhost:8081/api/orders/customer'; // default customer
@@ -48,9 +48,9 @@ function MyOrders({ token, role }) {
         // Map delivery records to simulated order response format
         const mapped = response.data.map(d => ({
           id: d.orderId,
-          customerName: 'Customer',
-          foodItem: 'Courier Cargo',
-          amount: 15.00, // placeholder amount for courier record list representation
+          customerName: d.customerName || 'Customer',
+          foodItem: d.foodItem || 'Courier Cargo',
+          amount: d.amount || 15.00,
           status: d.status,
           createdAt: d.createdAt
         }));
@@ -65,13 +65,13 @@ function MyOrders({ token, role }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, role]);
 
   useEffect(() => {
     fetchOrders();
     const interval = setInterval(fetchOrders, 3000);
     return () => clearInterval(interval);
-  }, [token, role]);
+  }, [fetchOrders]);
 
   const getStatusClass = (status) => {
     switch (status) {

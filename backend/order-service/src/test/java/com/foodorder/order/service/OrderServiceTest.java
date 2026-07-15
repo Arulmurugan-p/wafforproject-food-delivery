@@ -46,12 +46,14 @@ public class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        request = new OrderRequest("Alice", "Pizza", BigDecimal.valueOf(15.99));
+        request = new OrderRequest("Alice", "Pizza", BigDecimal.valueOf(15.99), "Anna Nagar, Chennai", "+1 555-0123");
         savedOrder = Order.builder()
                 .id(1L)
                 .customerName("Alice")
                 .foodItem("Pizza")
                 .amount(BigDecimal.valueOf(15.99))
+                .address("Anna Nagar, Chennai")
+                .phone("+1 555-0123")
                 .status("PLACED")
                 .build();
     }
@@ -71,6 +73,8 @@ public class OrderServiceTest {
         assertEquals("Alice", response.getCustomerName());
         assertEquals("Pizza", response.getFoodItem());
         assertEquals(BigDecimal.valueOf(15.99), response.getAmount());
+        assertEquals("Anna Nagar, Chennai", response.getAddress());
+        assertEquals("+1 555-0123", response.getPhone());
         assertEquals("REQUESTED", response.getStatus());
 
         verify(orderRepository, times(1)).save(any(Order.class));

@@ -38,6 +38,8 @@ public class OrderService {
                 .customerName(request.getCustomerName())
                 .foodItem(request.getFoodItem())
                 .amount(request.getAmount())
+                .address(request.getAddress())
+                .phone(request.getPhone())
                 .status("REQUESTED")
                 .build();
 
@@ -105,6 +107,8 @@ public class OrderService {
                 .customerName(order.getCustomerName())
                 .foodItem(order.getFoodItem())
                 .amount(order.getAmount())
+                .address(order.getAddress())
+                .phone(order.getPhone())
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())

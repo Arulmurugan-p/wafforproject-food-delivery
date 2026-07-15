@@ -14,19 +14,22 @@ function AdminPanel({ token, onLogout }) {
     headers: { Authorization: `Bearer ${token}` }
   };
 
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     if (!token) return;
     try {
+      const currentConfig = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
       // 1. Fetch all orders (to calculate statistics)
-      const ordersRes = await axios.get('http://localhost:8081/api/orders', config);
+      const ordersRes = await axios.get('http://localhost:8081/api/orders', currentConfig);
       setOrders(ordersRes.data);
 
       // 2. Fetch active workflow tasks
-      const tasksRes = await axios.get('http://localhost:8081/api/admin/tasks', config);
+      const tasksRes = await axios.get('http://localhost:8081/api/admin/tasks', currentConfig);
       setTasks(tasksRes.data);
 
       // 3. Fetch delivery partners
-      const partnersRes = await axios.get('http://localhost:8081/api/admin/tasks/delivery-partners', config);
+      const partnersRes = await axios.get('http://localhost:8081/api/admin/tasks/delivery-partners', currentConfig);
       setPartners(partnersRes.data);
 
       setError(null);
@@ -40,13 +43,13 @@ function AdminPanel({ token, onLogout }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, onLogout]);
 
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 2000);
     return () => clearInterval(interval);
-  }, [token]);
+  }, [fetchData]);
 
   // Statistics calculation
   const pendingOrders = orders.filter(o => o.status === 'REQUESTED').length;

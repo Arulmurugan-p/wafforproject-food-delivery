@@ -1,5 +1,6 @@
 package com.foodorder.order.controller;
 
+import com.foodorder.order.delivery.dto.DeliveryTaskResponse;
 import com.foodorder.order.entity.Delivery;
 import com.foodorder.order.entity.Order;
 import com.foodorder.order.repository.DeliveryRepository;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +30,40 @@ public class DeliveryController {
     private final TaskService taskService;
 
     @GetMapping("/tasks")
-    public ResponseEntity<List<Delivery>> getMyDeliveries(Authentication authentication) {
+    public ResponseEntity<List<DeliveryTaskResponse>> getMyDeliveries(Authentication authentication) {
         String partnerUsername = authentication.getName();
         log.info("[DeliveryController] Fetching deliveries for partner: {}", partnerUsername);
         List<Delivery> list = deliveryRepository.findByPartnerUsername(partnerUsername);
-        return ResponseEntity.ok(list);
+        List<DeliveryTaskResponse> responseList = list.stream().map(d -> {
+            Optional<Order> orderOpt = orderRepository.findById(d.getOrderId());
+            String customerName = "Unknown";
+            String address = "Unknown";
+            String phone = "Unknown";
+            String foodItem = "Unknown";
+            BigDecimal amount = BigDecimal.ZERO;
+            if (orderOpt.isPresent()) {
+                Order order = orderOpt.get();
+                customerName = order.getCustomerName();
+                address = order.getAddress();
+                phone = order.getPhone();
+                foodItem = order.getFoodItem();
+                amount = order.getAmount();
+            }
+            return DeliveryTaskResponse.builder()
+                    .id(d.getId())
+                    .orderId(d.getOrderId())
+                    .partnerUsername(d.getPartnerUsername())
+                    .status(d.getStatus())
+                    .eta(d.getEta())
+                    .createdAt(d.getCreatedAt())
+                    .customerName(customerName)
+                    .address(address)
+                    .phone(phone)
+                    .foodItem(foodItem)
+                    .amount(amount)
+                    .build();
+        }).toList();
+        return ResponseEntity.ok(responseList);
     }
 
     @PostMapping("/tasks/{orderId}/accept")

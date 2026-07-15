@@ -8,7 +8,7 @@ function OrderTracking({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchDetails = async () => {
+  const fetchDetails = React.useCallback(async () => {
     if (!token) return;
     try {
       const response = await axios.get(`http://localhost:8081/api/orders/${orderId}`, {
@@ -22,13 +22,13 @@ function OrderTracking({ token }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId, token]);
 
   useEffect(() => {
     fetchDetails();
     const interval = setInterval(fetchDetails, 2000);
     return () => clearInterval(interval);
-  }, [orderId, token]);
+  }, [fetchDetails]);
 
   const getStatusClass = (status) => {
     switch (status) {

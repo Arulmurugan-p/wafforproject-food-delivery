@@ -23,4 +23,10 @@ public class OrderRequest {
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
     private BigDecimal amount;
+
+    @NotBlank(message = "Delivery address is required")
+    private String address;
+
+    @NotBlank(message = "Contact phone number is required")
+    private String phone;
 }

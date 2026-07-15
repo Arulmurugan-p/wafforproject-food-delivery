@@ -31,7 +31,7 @@ public class NotificationController {
                 .orElse("CUSTOMER");
 
         log.info("[NotificationController] Fetching notifications for user: {}, role: {}", username, role);
-        List<Notification> list = notificationRepository.findByUsernameOrRoleOrderByCreatedAtDesc(username, role);
+        List<Notification> list = notificationRepository.findMyNotifications(username, role);
         return ResponseEntity.ok(list);
     }
 
@@ -45,7 +45,7 @@ public class NotificationController {
                 .orElse("CUSTOMER");
 
         log.info("[NotificationController] Marking notifications as read for user: {}, role: {}", username, role);
-        List<Notification> list = notificationRepository.findByUsernameOrRoleOrderByCreatedAtDesc(username, role);
+        List<Notification> list = notificationRepository.findMyNotifications(username, role);
         for (Notification n : list) {
             n.setRead(true);
         }
